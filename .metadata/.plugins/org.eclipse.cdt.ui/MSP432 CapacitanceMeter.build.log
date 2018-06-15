@@ -1,0 +1,8 @@
+
+**** Build of configuration Debug for project MSP432 CapacitanceMeter ****
+
+/home/ryhig/CCS/ccsv8/utils/bin/gmake -k -j 4 all -O 
+ 
+gmake[1]: 'MSP432 CapacitanceMeter.out' is up to date.
+
+**** Build Finished ****

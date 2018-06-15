@@ -1,0 +1,164 @@
+/*
+ * MSP432 GPIO - Blink LEDs
+ *
+ * Copyright (c) Dr. Xinrong Li @ UNT
+ * All rights reserved.
+ */
+
+#include <stdint.h> //exact-width integer types
+#include <stdio.h>
+
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h> //driver library
+
+
+#define MAX_BUFF_LEN 100
+#define DCO_FREQ    12e6 //unit: Hz
+
+void init_ADC();
+void init_UART();
+void adc_isr();
+void send_string(const char *str);
+
+char buff[MAX_BUFF_LEN];
+double curADCResult, normalizedADCResult;
+
+void main(void)
+{
+    uint32_t n;
+    uint16_t p2_data = 0;
+
+    WDT_A_holdTimer();  //stop watchdog timer
+
+    //Enable FPU for DCO Frequency calculation.
+    FPU_enableModule();
+
+    init_ADC();
+    init_UART();
+    //Change VCORE to 1 to support a frequency larger than 24MHz.
+    //See data sheet for Flash wait-state requirement for a given frequency.
+    PCM_setCoreVoltageLevel(PCM_VCORE1);
+    FlashCtl_setWaitState(FLASH_BANK0, 1);
+    FlashCtl_setWaitState(FLASH_BANK1, 1);
+
+    //Set the DCO Frequency.
+    //DCO nominal frequencies: 1.5, 3, 6, 12, 24, 48 MHz.
+    CS_setDCOFrequency(DCO_FREQ);
+
+    //Init clock signals: MCLK, HSMCLK, SMCLK.
+    //Can be divided by 1, 2, 4, 8, 16, 32, 64, or 128.
+    CS_initClockSignal(CS_MCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    CS_initClockSignal(CS_HSMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_8);
+    CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_16);
+
+    //Configure P1.0, P2.0, P2.1, P2.2 as output.
+    //P1.0 is connected to a red LED on LaunchPad.
+    //P2.0, P2.1, P2.2 are connected to a RGB tri-color LED on LaunchPad.
+    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
+    GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0|GPIO_PIN1|GPIO_PIN2);
+//
+    while(1)
+    {
+        //simple delay loop
+        for(n=0; n<1000000; n++)
+        {
+            //do nothing
+        }
+
+        GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
+
+        GPIO_setOutputLowOnPin(GPIO_PORT_P2, (~p2_data)&0x07);
+        GPIO_setOutputHighOnPin(GPIO_PORT_P2, p2_data);
+
+        p2_data++;
+        if(p2_data == 0x03)
+        {
+            p2_data = 0x04;
+        }
+        if(p2_data >= 0x05)
+        {
+            p2_data = 0;
+        }
+    } //end of while
+
+}
+
+void init_ADC()
+{
+    // Initializing ADC with divider 1/1
+    ADC14_enableModule();
+    ADC14_initModule(ADC_CLOCKSOURCE_MCLK, ADC_PREDIVIDER_1, ADC_DIVIDER_1, 0);
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P5, GPIO_PIN5, GPIO_TERTIARY_MODULE_FUNCTION);
+
+//
+    ADC14_configureSingleSampleMode(ADC_MEM0, true);
+    ADC14_configureConversionMemory(ADC_MEM0, ADC_VREFPOS_AVCC_VREFNEG_VSS, ADC_INPUT_A0, false);
+//
+//    //Setting up P5.6, P5.5, P5.4 in Analog Mode.
+//    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P5, GPIO_PIN6 | GPIO_PIN5 | GPIO_PIN4,
+//                                               GPIO_TERTIARY_MODULE_FUNCTION);
+//
+//    //sample Timer in auto iteration mode and enabling interrupts
+    ADC14_enableSampleTimer(ADC_MANUAL_ITERATION);
+//    ADC14_enableInterrupt(ADC_INT0);
+//
+//    //Enabling interrupts
+//    Interrupt_enableInterrupt(INT_ADC14);
+//    Interrupt_enableMaster();
+//
+    ADC14_enableConversion();
+    ADC14_toggleConversionTrigger();
+
+}
+
+void init_UART()
+{
+    const eUSCI_UART_Config uartConfig =
+    {
+         EUSCI_A_UART_CLOCKSOURCE_SMCLK,
+         78,
+         2,
+         0,
+         EUSCI_A_UART_NO_PARITY,
+         EUSCI_A_UART_MSB_FIRST,
+         EUSCI_A_UART_ONE_STOP_BIT,
+         EUSCI_A_UART_MODE,
+         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
+    };
+
+    UART_initModule(EUSCI_A0_MODULE, &uartConfig);
+
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
+
+    UART_enableInterrupt(EUSCI_A0_MODULE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+    Interrupt_enableInterrupt(INT_EUSCIA0);
+    Interrupt_enableSleepOnIsrExit();
+    Interrupt_enableMaster();
+}
+
+void adc_isr()
+{
+    uint64_t status = ADC14_getEnabledInterruptStatus();
+    ADC14_clearInterruptFlag(status);
+    if(ADC_INT0 & status)
+    {
+        curADCResult = ADC14_getResult(ADC_MEM0);
+        normalizedADCResult = (curADCResult * 3.3)/ 16384;
+        snprintf(buff, MAX_BUFF_LEN, "V = %.4f\r\n", normalizedADCResult);
+        send_string
+        ADC14_toggleConversionTrigger();
+
+    }
+}
+
+void send_string(const char *str)
+{
+    uint32_t len, i = 0;
+
+    len = strlen(str);
+    while(i < len)
+    {
+        UART_transmitData(EUSCI_A0_BASE, str[i++]);
+        while(!UART_getInterruptStatus(EUSCI_A0_BASE, EUSCI_A_UART_TRANSMIT_COMPLETE_INTERRUPT_FLAG));
+        UART_clearInterruptFlag(EUSCI_A0_BASE, EUSCI_A_UART_TRANSMIT_COMPLETE_INTERRUPT_FLAG);
+    }
+}

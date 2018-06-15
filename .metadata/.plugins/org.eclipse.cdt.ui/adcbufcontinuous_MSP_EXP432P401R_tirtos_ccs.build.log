@@ -1,0 +1,18 @@
+
+**** Build of configuration Debug for project adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs ****
+
+/home/ryhig/CCS/ccsv8/utils/bin/gmake -k -j 4 all -O 
+ 
+Building file: "../adcBufContinuousSampling.c"
+Invoking: ARM Compiler
+"/home/ryhig/CCS/ccsv8/tools/compiler/ti-cgt-arm_18.1.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --include_path="/home/ryhig/workspace_v8/adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs" --include_path="/home/ryhig/ti/simplelink_msp432p4_sdk_2_10_00_14/source/third_party/CMSIS/Include" --include_path="/home/ryhig/ti/simplelink_msp432p4_sdk_2_10_00_14/source/ti/posix/ccs" --include_path="/home/ryhig/CCS/ccsv8/tools/compiler/ti-cgt-arm_18.1.1.LTS/include" --advice:power=none -g --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on --preproc_with_compile --preproc_dependency="adcBufContinuousSampling.d_raw" --cmd_file="/home/ryhig/workspace_v8/tirtos_builds_MSP_EXP432P401R_release_ccs/Debug/configPkg/compiler.opt" "../adcBufContinuousSampling.c"
+Finished building: "../adcBufContinuousSampling.c"
+ 
+Building target: "adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs.out"
+Invoking: ARM Linker
+"/home/ryhig/CCS/ccsv8/tools/compiler/ti-cgt-arm_18.1.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --advice:power=none -g --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on -z -m"adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs.map" -i"/home/ryhig/ti/simplelink_msp432p4_sdk_2_10_00_14/source" -i"/home/ryhig/ti/simplelink_msp432p4_sdk_2_10_00_14/kernel/tirtos/packages" -i"/home/ryhig/CCS/ccsv8/tools/compiler/ti-cgt-arm_18.1.1.LTS/lib" --diag_wrap=off --display_error_number --warn_sections --xml_link_info="adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs_linkInfo.xml" --rom_model -o "adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs.out" "./MSP_EXP432P401R.obj" "./adcBufContinuousSampling.obj" "./main_tirtos.obj" "../MSP_EXP432P401R_TIRTOS.cmd" -l"ti/display/lib/display.aem4f" -l"ti/grlib/lib/ccs/m4f/grlib.a" -l"third_party/spiffs/lib/ccs/m4f/spiffs.a" -l"ti/drivers/lib/drivers_msp432p401x.aem4f" -l"third_party/fatfs/lib/ccs/m4f/fatfs.a" -l"ti/dpl/lib/dpl_msp432p401x.aem4f" -l"/home/ryhig/workspace_v8/tirtos_builds_MSP_EXP432P401R_release_ccs/Debug/configPkg/linker.cmd" -l"ti/devices/msp432p4xx/driverlib/ccs/msp432p4xx_driverlib.lib" -llibc.a 
+<Linking>
+Finished building target: "adcbufcontinuous_MSP_EXP432P401R_tirtos_ccs.out"
+ 
+
+**** Build Finished ****

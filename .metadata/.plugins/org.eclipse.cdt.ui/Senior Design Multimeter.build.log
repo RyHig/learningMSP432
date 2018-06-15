@@ -1,0 +1,8 @@
+
+**** Build of configuration Debug for project Senior Design Multimeter ****
+
+/home/ryhig/CCS/ccsv8/utils/bin/gmake -k -j 4 all -O 
+ 
+gmake[1]: 'Senior Design Multimeter.out' is up to date.
+
+**** Build Finished ****
